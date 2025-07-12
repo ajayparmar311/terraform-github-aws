@@ -34,11 +34,11 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: terraform -chdir=$TF_ROOT init
 
       - name: Terraform Format
         id: fmt
-        run: terraform fmt -check
+        run: terraform -chdir=$TF_ROOT fmt -check
 
       - name: Terraform Plan
         id: plan
