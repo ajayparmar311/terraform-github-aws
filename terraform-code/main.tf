@@ -19,3 +19,8 @@ resource "aws_iam_user" "terraform-test" {
     service = "terraform"
   }
 }
+
+resource "aws_iam_user_policy_attachment" "attach_s3_readonly" {
+  user       = aws_iam_user.terraform_test.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+}
