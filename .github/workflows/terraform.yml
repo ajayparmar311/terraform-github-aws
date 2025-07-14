@@ -9,6 +9,9 @@ on:
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   TF_ROOT: terraform-code
+  TF_LOG: DEBUG
+  TF_LOG_PATH: terraform.log
+
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
@@ -33,18 +36,19 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
+          terraform_wrapper: true
 
       - name: Terraform Init
         id: init
-        run: terraform -chdir=$TF_ROOT init
+        run: terraform -chdir=$TF_ROOT init -input=false | tee tfinit.log
 
       - name: Terraform Format
         id: fmt
-        run: terraform -chdir=$TF_ROOT fmt -check
+        run: terraform -chdir=$TF_ROOT fmt -check | tee tffmt.log
 
       - name: Terraform Plan
         id: plan
-        run: terraform -chdir=$TF_ROOT plan -no-color
+        run: terraform -chdir=$TF_ROOT plan -no-color -input=false -out=tfplan | tee tfplan.log
         continue-on-error: true
 
       - name: Terraform Plan Status
@@ -53,4 +57,17 @@ jobs:
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform -chdir=$TF_ROOT apply -auto-approve
+        run: terraform -chdir=$TF_ROOT apply tfplan -auto-approve | tee tfapply.log
+	continue-on-error: true
+
+      - name: Upload All Logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-logs
+          path: |
+            tfinit.log
+	    tffmt.log
+            tfplan.log
+            tfapply.log
+            terraform.log
