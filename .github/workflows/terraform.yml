@@ -29,7 +29,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::402826896847:role/github-action-role
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Setup Terraform
@@ -58,7 +58,7 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform -chdir=$TF_ROOT apply tfplan -auto-approve | tee tfapply.log
-	continue-on-error: true
+        continue-on-error: true
 
       - name: Upload All Logs
         if: always()
@@ -67,7 +67,7 @@ jobs:
           name: terraform-logs
           path: |
             tfinit.log
-	    tffmt.log
+            tffmt.log
             tfplan.log
             tfapply.log
             terraform.log
