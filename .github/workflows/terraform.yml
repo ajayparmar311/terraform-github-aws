@@ -67,7 +67,7 @@ jobs:
           name: terraform-logs
           path: |
             tfinit.log
-	    tffmt.log
+            tffmt.log
             tfplan.log
             tfapply.log
             terraform.log
