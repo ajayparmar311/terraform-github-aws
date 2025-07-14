@@ -57,7 +57,7 @@ jobs:
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform -chdir=$TF_ROOT apply tfplan -auto-approve | tee tfapply.log
+        run: terraform -chdir=$TF_ROOT apply -auto-approve | tee tfapply.log
 	continue-on-error: true
 
       - name: Upload All Logs
