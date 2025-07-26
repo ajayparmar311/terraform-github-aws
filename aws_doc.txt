@@ -1,0 +1,617 @@
+ - cross -Zone Load Balancer
+	-  ALB :  CZLV is by default enable. (we can disable it at target group lavel)
+	- no changes for inter AZ data transfer
+	- go to load balancer target group and below attribute section there we can enable and disable CZLB 
+	- network and Gateway LB :
+		- CZLV  disabled by default
+		-  you pay changes for inter AZ data if enabled
+		- go to load balancer and below attribute section there we can enable and disable CZLB 
+	- classic LB : 
+		- disabed bydefault 
+		- free for inter AZ data
+ - load balancer SSL certificate : 
+	User --https encrypted over www----- > Load balancer ofload ssl ---tranfer http data in private VPC-----> EC2
+	- LB uses X.509 Certificate (SSL/TLs certificate)
+	- we can manage certificate using ACM (AWS Certificate manager)
+	- https Listners:
+		- we must specify a default certificate
+		- we can add an optional list of certs to sopport multiple domain
+		- Clients can use SNI (server name indication ) to specify the hostname they want to reach 
+			- SNL solves the problem of loading multiple SSL certificate onto one web server (to server multiple websites)
+			- it's a newer protocol and requires the client to indicate the hostname of the target server in the initial SSL handshake
+			- the server will then find the currect certificate or return the default one
+			- This only works with ALB and NLB , cloudfront
+		- ability to specify a security policy to support older versions of SSL/TCS (legacy client)
+	
+ - Connection draining : is kind of delay set on ALB to complete the exisitng request of the user on draining or unhealthy target
+	- Connection draining : for CLB
+	- deregistration delay : for ALB and NLB
+	
+- What is an Auto Scaling Group : 
+	- The goal of an ASG is to : 
+		- scale out to match and increased load 
+		- scale in to match descrased load 
+		- ensure we have min and max number of instance running 
+		- automatically register new instances to load balancer
+		- recreate and EC2 instance in case of previous one is terminated or unhealthy
+		- ASG are free and we will pay only of increated EC@ instance 
+		
+- AWS RDS : Relational Database service: mysql pass : JanNew#2025
+	- RDS is AWS managed  service:
+		- auto provisioning and OS patching
+		- continous backup and restore to specific timestamp
+		- monitoring deshboard
+		- Read replicas for inproved read performance
+		- Multi AZ setup for DR 
+		- maintenance windows for upgrades
+		- scaling Capabilities (vertical and horizontal)
+		- storage backed by EBS
+		- But we can not SSH into instance
+		- in AWS there is a network cost when data goe from one AZ to another but for RDS read replicas within the same region , we don not pay that fee
+	- RDS Multi AZ (DR)
+		- SYNC replication
+		- one DNS name : auto app failover to standby
+		- increase availability failover in case of loss of AZ, loss of network , intane or storange failover.
+		- no manual intervantion in app
+		- not used for scaling 
+		- we can use read replicas as DR in multi AZ 
+		- no downtime require to change from single AZ to multi AZ
+		
+		
+		
+	- RDS - Storage auto scaling:
+		- help to increase storage dynamically
+		- detect and increase the storage 
+		- we have to set max storage threshold
+	- you can craete elow DB in AWS : 
+		- postgres
+		- MySQL
+		- MariaDB
+		- Oracle
+		- MS SQL
+		- IBM DB2
+		- AURORA (AWS proprietary DB)
+	- RDS read REplicas for read scalability : 
+		- up to 15 read replicas
+		- within AZ , cross AZ and cross region
+		- replication is ASYNC so reads are eventually consistent
+		- replicas can be promoted to their own Bd.
+		- Application must update the connection string to leverage read replicas
+		- we can only do read on read replicas which will be SELECT kind of statements
+	- RDS Custom : 
+		- Managed oracle and ms sql database with OS and database customization
+		- RDS custome enable us to underlying database and OS so you can 
+			- Configure settings 
+			- install patches
+			- enable nativ feature
+			- Access the underling EC2 instance using SSH and SSM session manager
+		- before doing any customisaion De-activate automation modeand take DB snapshot.
+		- RDS custom will have full admin access to underlying OS and DB
+		
+	- AWS Aurora : 
+		- Aurora is AWS  native service 
+		- postgres and mysql are both supported as aurora DB
+		- aurora is cloud optimized  and claims 5X permormance improvement, and 15 read replicas- AURORA cost more upto 20 %
+		- it will create 6 copy of your data access 3 AZ , 4 copy from 6 is for write and 3 copy for ready , it has self healing with peer-to-peer replication 
+	 - Clients ----> writer endpoint pointing to the master ---- > master node for write----->storage 
+	 - client <-------> reader endpoint connection load balancing -----> master read replicas ----- storage(ayto expanding from 10G to 128 TB)
+	 
+	- Feature of Aurora :
+		- auto fail-over
+		-  backup and recovery
+		- isolation and security
+		- Industry compliance
+		- push button scaling 
+		- autometic paching with zero downtime
+		- adv. monitoring
+		- Routing Maintenance
+		- backtrack : restore data at any point of time without using backup 
+		
+	- advance concept of Aurora : 
+		- Aurora REplicas - auto scaling 
+		- Aurora Custom endpoint : can attched other subset of powerfull or specific machine for analisis perposes 
+		- Aurora Serverless : automated database instantiation and auto scaling based on actual usage : in case of infrequest and unpredicted workload , no capicity planning needed . u will pay per second which is more cost effective, this will be accomodated with proxy fleet . where clients will talk to proky fleet endpoint and below that many instances will be created and handled by Aurora serverless
+		- globel aurora : will have one primary region where read and write will happen. up to 5 secondary read-only region, replication led less then 1 sec, up to 16 read replica per secondary region, Help for decreasing latency, promoting another region has an RTO of < 1 min 
+		- Aurora Machine learning : can integrate with AWS ml service , AWS Sagemaker, AWS Comprehend for sentiment analysis, use case , fraud detection , ads targeting, sentiment analysis, product recommendations.
+		- Babelfish for Aurora Postgresql : allow aurora postgress to understand commands targeted for mssql server : use case if u have migrated from mssql database to aurora postgresql and u do mot want to do much or no change to your appliction so in that case babelfish will translep your mssql query into aurora postgresql query from T-sql to PL/pgsql
+		
+	- RDDS backup : 
+		- automated backups : 
+			- daily full backup in backup window :
+			-  transection logs are backed up by RDS every 5 min 
+			- retention policy is 1 to 35 days and 0 for disable backup 
+		- Manual DB snapshot : 
+	- RDS and aurora restore option :
+		- restoring a RDS / Aurora backup or snapshot creates a new database
+		- restore mysql RDS database from s3 : 
+			- create backup of onpremises database in s3 and restore the backup into new RDS instance running mysql
+		
+		- restore mysql Aurora Cluster from s3 : 
+			- create backup of onpremises database in s3 using percona Xtrabackup  and restore the backup into new Aurora cluster running mysql 
+	- Aurora database Cloning 
+		- create new aurora DB clsuter from an exisitng one 
+		- faster then snapshot and restore
+		- uses copy-on-write protocol : will create only the cluster and point to same storage . later move to own storage 
+		- use case : to create any staging databse for some testing 
+	- RDS and Aurora Security : 
+		- At-rest encryption : 
+			- DB Master and replicas encryption suing AWS KMS - Must be defind at lounch time 
+			- if master is not encrypted then read replica can not be encrypted
+			- To encrypt and un-encrypted DB create an scnapshot and restore with encryption 
+		- in-Flight encryption : TLS-ready by default, use the aWS TLs root cert at client side 
+		- IAM auth : use IAM roles with min privilage to connect to your db
+		- Security group : control network access to RDS 
+		- NO SSH available execpt RDS custom
+		- enable audit logs using cloud watch for debug.
+		
+	- AWS RDA proxy : 
+		- RDS proxy will only accesseble in private VPC , not publically acceseble.
+		- fully managed databse proxy from RDS
+		- Allows apps to pool and share DB connections established with the databse 
+		- inprove db efficiency by reducing stress on DB 
+		- serverless, auto scaling,highly available multi AZ
+		- enforce IAM auth for DB and securely store creds in aws secrets manager.
+	- AWS ElasticCache : 
+		- this is Managed server by AWS , wihc manages redis or Memcached tech.
+		- require many code changes if implemented
+		- make help application stateless 
+		- ElasticCache can store db data and also user session 
+		- ElasticCache support IAM auth for Redis only and for rest app you can use username and password 
+		- usecase we can use redis sorted set for leaderboard generation 
+		
+- Route 53 
+	- A highly available , scalable , fully managed and Authoritative DNS (Authoritative DNS means customer means we can update the rules )
+	- rought 53 is also a Domain registar
+	- Ability to check the health of your resources
+	- the only AWS service which provide 100% availability SLA
+	- why rought 53 ? 53 is reference to the traditional DNS port
+	
+	- Route 53 - records : 
+		- Each record contains: 
+			- Domain/SubDomain name - e.g. example.commands
+			- record type : e.g. A , AAAA, CNAME , NS
+				- A : map host to ipv4
+				- AAAA : maps a hostname to IPv6
+				- CNAME : maps hostname to another hostname
+					- like app.mydomain.com to blabla.anything.com
+				- NS : Name servers for the Hosted Zone	
+					- Control how traffic is routed for a domain
+				- Alias : 
+					- point hostname to an AWS resource (app.mydomain.com --> blabla.amazonaws.com)
+					- Work for root domain and non root domain
+					- free of charge 
+					- can not send TTL
+					- alias records target:
+						- ELB
+						- Cloudfront Distribution
+						- API gateway
+						- Elastic Beanstalk env
+						- S3 website
+						- VPC interface endpoint
+						- Global Accelerator Accelerator
+						- Route 53 record on same hosted zone 
+					- we can not set an ALIAS record for an EC2 DNS name 
+					
+			- value:  eg. 10.12.20.34
+			- routing policy : how route 53 responds to query 
+			TTL : amount of time the record cached at DNS Resolvers : 
+				- client will call to DNS with request to access application with www.myapp.com ----> DNS will respond with IP address of application and also send TTL duration of 300 second ----> now client will cache the IP address of application server for 300 sec . and will not call DNS for the record 
+				
+				- we can have TTL upto 24 hour less traffic to route 53 low cost , also we can have TTL to 60s which increase load on route 53 and increase cost .choose as per your requirenment 
+		
+	- Route 53 - Hosted Zones : 
+		- A container for the records that define how to route traffic to a domain and its subdomains
+		
+		- public hosted Zone : containes records that specify how to route traffic on the internet (public domain name) : if a client call the domain this hosted zome can resolve the underlying application IP 
+		
+		- client on internet <---get the IP --> public hosted zone ------> application like in EC@ instance 
+		
+		- Private hosted zone : containes records that specify how you route traffic within one or more VPC (private domain name)
+		
+	- we can use commands like : 
+		- nslookup www.google.com :  to to find the hostip 
+		- dig www.google.com :  to to find the hostip 
+	
+	- route 53 - Routig policies
+		- define how route 53 responds to DNS queries
+		- Route 53 supports the following Routing Policies
+			- simple 
+				- route traffic to single resource
+				- we can specify multiple target ip in target block the client has to choose which one to call 
+			- weighted
+				- Control the % of the requests that go to each specific resource 
+				- while defining the records we will attach weight to the reource and behalf of that it will be selected at time of call 
+			- failover: 
+				- this we can setup for SC to SR switch in case of DC failover 
+				- we can set primary and secondary record with health check , So if primary resource is unhealthy route 53 will auto switch to secondary resource 
+			- latency based :
+				- the resourcxe will be selected as per the lowest latency .
+				- if u r calling from canada and u have resource deployed in us-east-1 and south-east-1 singapore then you will get output from us-east-1 as it is closest .
+			- Geolocation : 
+				- this routing based on user location 
+				- use case : website localization , restric content distribution , load balancing , as Us user will always be geting the app deployed for US, or language specific app as per region . 
+				- you can create default location so if user is not present in specified contery or continent . request should go to default location 
+				
+			- Multi-value : 
+				- use when routing traffic to multiple resources
+				- it allow health checks 
+			- Geoproximity (using route 53 traffic flow feature)
+				- we can define bies to the region fore traffic flow 
+			- IP-based routing:
+				- routing is based on client  ip addresses
+				-  we will provide list of CIDR and location for client
+				- use case : Optimize performance and reduce network cost
+				- route enduser from particuler ISP to specific endpoint
+			- health check in route 53 :
+				- type of health check : 
+					- Endpoint : Establish a connection with the resource to determine its health status.
+					- Calculated health check : The status of the health check is based on the status of the other health checks.
+					- CloudWatch alarm : The status of the health check is based on the state of a specified CloudWatch alarm
+			
+- AWS S3 : 
+	- it is not globel service although the name of bucket should be uniq accross AWS
+	- it do not store data in folders . it used key value pair to store data.
+	
+	- AWS S3 : security : 
+		- User-based : 
+			- IAM Policies - which API call should be allowed for specific user from IAM
+		- REsource based : 
+			- bucket policies : bucket wide rules from S3 console - allows across account
+			- object access control list
+			- bucket access control list 
+			
+		- encryption : encrypt objects in AWS S# using encryption keys 
+		
+	- S3 static website : insite the properties block of bucket we can enable static website .
+	
+	- S3 -versioning : 
+		- it will be enable at bucket level 
+		- same key overwrite will change the version 1,2,3 .....
+		it protect against unintended deletes , because we have ability ro restore a version 
+		- easy rollback to previous version 
+		- insite the properties block of bucket we can enable versioning.
+			
+	- S3 - Replication (CRR and SRR)
+		- CRR : cross region replication
+		- SRR : same region replication
+		- To enable this we must enable versioning in both source and destination buckets 
+		- Buckets can be in different AWS accounts
+		- copying is asynchromous
+		- must give proper IAM permissions to S3
+		- use case : 
+			CRR :  compliances , lower latency access , replication across accounts
+			SRR : log aggregation , live replication between production and test accounts 
+		- we can also enable and disable delete marker replication 
+		
+	- S3 - Storage classes : 
+		- s3 standard - General purpose : 
+			- big data analytics , mobile and gaming app, ocntent distribution
+		- s3 standard - infrequent access (IA)
+			- disaster recovery , backups ..
+		- s3 one Zone-infrequent Access
+			- secondary backup copies of on premise data
+		- s3 glacier instant retrieval
+			- miliseconds retrieval
+			- min storage duration 90 day
+		- s3 glacier flexible retrieval
+			- - min storage duration 90 day
+		- s3 glacier deep archive
+			- - min storage duration 180 day
+		- s3 intelligent tiering  
+	
+	- we can create lifecycle rules under management:
+		- transition action : move object to glacier for archiving after 6 month
+		- Expiration actions :  configure object to expire delete after some time 
+		
+	 - we can use S3 analytics to get report of the S# bucket data to plan the lifecycle rules  
+		
+	- s3 - requester pay : 
+		- in s3 there is cost associated with storage and also with the data access or download . it has to be payed by the owner of the bucket 
+		- But with requester pay buckets, the requester instead of bucket owner pay the cost of the request and the data download from the bucket 
+	
+	-s3 - event notificaiton : 
+		- we can craete event notificaiton under properties block .
+		- we can send notification to SQS (simple queue service), SNS or lambda funtion 
+	
+	- s3 performance : 
+		- multi-part upload 
+			- recommended for ? 100 file 
+			- must for > 5GB file
+		- S3 tranfer acceleration : 
+			- increase transfer speedn by transferring files to AWS edge location 
+			file in USA ------> AWS edge location using public internet -----> stored to S3 bucket using AWS private netwrok from edge location 
+		- s3 byte-Range fatches :
+			- we will get the data in parts which will be more ewsilience in case of failures
+			
+	- S3 batch Operations 
+		- Perform bulk operation on the exisitng s3 objectswith a single request 
+		 - modify object metadata and properties
+		 - copy object between s3 buckets
+		 - encrypt un-encryoted object 
+		 - Modify ACLs and tag .
+		 - Restore objects from S3 Glacier
+		 - Invoke Lambda function to perform custome action on each object.
+		- The job contains list of onjects , the action to perform and optional parameters
+		- bacth operation manages retries,tracks progress,send complition notification , generate reports
+		- we can get s3 inventory to get object list and use Athena to query and filter objects 
+		
+	- S3 - storage Lens : is metrix service which and help us to optimize the S# infra which we have setup , can create deshboard for visualiation 
+
+- s3 security
+	- s3 - Object encription : 
+		- 4 methods to encypt data : 
+			- server side encription : 
+				- SSE with aWS S3 managed key
+					- AWS managed encryption
+					- encryption type AES-256
+				- SSE with KMS keys stored in AWS KMS
+					- we use KMS or cutome key for encryption
+					- this will be for audit perposed
+					- also we can see the traces of access in cloudtrail
+				- SSE with customer provided keys:
+					- we will use the encryption key provided by the client in the request header
+					- s3 will not store key
+					- https mush be used 
+				
+			- client side encryption :
+				- client will send the encypted data to S3 and decryp the data at teh tim of retrival 
+				
+		- S3 - encription iin transit (SSL/TLS)
+		
+		- AWS S3 - CORS (cross origin Resource Sharing)
+		
+		- AWS S3 - MFA delete enable/disable : can be enable oly with aws CLI or SDK 
+		
+		- AWS S3 - access logs: enable servier access loggin in perperties tab
+		
+		- AWS S3 - pre signed URLs
+			- we can generate pre-signed URL using  S3 console ,aws cli or SDK
+			- URL expiration :
+				- S3 console : 1 min up to 12h
+				- AWS cli : default 3600s , MAX 604800 sec ~168h
+				
+		- aws s3 
+		 - Glacier vault lock  : 
+			- adopt a WORM (write once read many) model 
+			- create vault lock policy
+			- lock the policy for future edit (can no longer be chanege or delete)
+			- helpful or compliance and data retention 
+		 - object lock (versioning must be enabled) :
+			- adopt WORM
+			- retention mode - Compliance: can not be change by any one in time frame
+			- retention mode - Governance :  can be change by some users
+			- retention period : project object for fixed period
+			- legal hold : protest object for indefinitely but can be modified by some suers with proper access
+			
+		- AWS S3 - Access Points : 
+			- we can creatse access point to route uer to specific prefix of object 
+			- access point simplify security management for S3 bucket
+			- Each access point has : 
+				- its own DNS name (can be internet facing or VPC private facing )
+				- access point policy manage security at scale
+				
+		- AWS s3 : object lambda : it is used to change the object before it is retrived by the caller application 
+		 
+	- AWS CloudFront : 
+		- content delivery Network CDN
+		- improve read performance , content is cached at edge location 
+		- DDoS protection , integration with shield, AWS web application firewall
+		
+		- cloudfront - Origins:
+			- s3 bucket : we will create origin access control to access S3 bucket from cloud frount 
+			- VPC origin
+			- csutome origin 
+			
+		- How it work 
+			Client call cloudfront -------> cloudfront data in edge location cache : if found return that to client : if not found send requerst to origin to get the data and cache the data in edge location --------------> origin aws s3
+			
+		- cloudfront - ALB or ECS as an origin - using VPC origin:
+			- this is most secure way to inplimentation, Because your application is hosted in private VPC and even your ALB,NLB is also in private VPC
+			
+			- users-----> CF and edgelocation ----> VPC origin ---< private ALB-NLB-EC2
+			
+		- Cloudfront Gro restrictin
+			- we can restrict who can access the distribution 
+				- allowlist : allow user to access content only if they are in one of the countries on a list of approved countries
+				- Blocklist : Prevent user to access content only if they are in one of the countries on a list of Banned countries
+				
+			- countries is determined using 3rd party geo IP database 
+			- use case : copyright Lows to control access to content
+			- we will find this funtion under security secton
+		
+		- cloudfront price class : 
+			- all
+			- class 200
+			- class 100: cheapest rate 
+			
+		- cloudfront Cache invalidation : 
+			- in case if we update backend CF will not know the changes and will server the old cached data from edge location . in that case we can invalidate the cloudfromt cache . so that next time user will call CF that will be redirected to origin and then new data will be cached
+			
+			- we can invalidted all files * or specific paths /images/*
+			
+	- AWS globel accelerator used Anycast IP  : 
+		- unicast and anycast IP
+			- unicast IP : once server holds one IP address
+			- anycast IP : all server holds the same IP address and the client is routed to nearest one.
+		
+		- used AWS internal network to route to your application.
+		- 2 anycast IP are created for your application
+		- anycast IP send traffic directly to edge locations 
+		- the edge locations send the traffic to your application 
+		- works with ElasticIP , EC2 instance, ALB,NLB , public or private 
+		- internal aws network , noissue with client cache, low latency
+		- health check : perform health check of application , help make app global , great for disaster recovery
+		- only 2 external IP need to be whitelisted in client side 
+		- DDoS protection is used using aws shield 
+		
+			
+	- AWS snowball device : 
+		- it is a phycial device and can be placed at your location u will transfer data to snowball device an then device move to S3 location and we can import and exprt data from it . 
+		- it provide very hight bandwidth or data transfer 
+		
+	- AWS edge compouting : 
+		- we will have Snowball Edge device to do edge computing at remote location with no internet facility 
+	
+	- AWS fSx : use case to migrate lagecy app or on-premise
+		- launch 3rd party high performance file system on AWS 
+		- fully managed service 
+		- FSx for windows 
+		- FSx for luster : high performance computing 
+		- FSx for NetApp ONTAP
+		- FSx for OpenZFS
+		
+	- AWS storage gateway / hybride  cloud :
+		- usecase : 
+			- disaster recovery
+			- backup and restore
+			- tiered storage
+			- on premises cache and low-latency file access
+			
+		- Type of storage gateway : 
+			- s3 file gateway
+			- FSx file gateways
+			- volume gateways
+			- tape gateway
+			- hardware gateways 
+	
+	- aws transfer Family : 
+		- aws transfer for SFTP
+		- aws transfer for ftp - only within the VPS
+		- aws transfer forftps
+		
+		user/FTP client -------> route 53 -------> transfer family ---------> s3/EFS
+		
+	- aws Data sync : 
+		- to sync data from external resources with the help of aws dta sync agent 
+		- To sync data from aws to aws se ,EFS FEx to s3 ,EFS , FSx
+		
+	- aws SQS : simple queue service : we use this for application decoupling 
+		= fully managed 
+		- we use queue length metric to increase aws ASG which can act as consumer of the SQS
+		- producer ----> SQS -----> consumer
+		- sqs long pulling
+		- sqs fifo queue
+		- sqs with Auto scaling group
+		- sqs can be use as buffer to database
+		
+	- aws SNS : pubsub 
+	- SNS + SQS : fan out 
+		- push once in SNS , receive in all SQS queue that are subscribers
+		- buying service ----> SNS topic ----> 2sqs serice (bill service ,shipping service )
+		- s3 bucket created ----> event ----> SNS ----> lambda + email + other service 
+		- buying service -----> SNS ----> kinesis dta firehose -----> S3
+		- buying service ---> SNs FIFO topic --> SQS FIFO queue ----> shipping and froud service 
+		- we can apply filter policy on SNS
+		
+	- AWS Kinesis Data Streams
+		- collect and store streaming data in real-time
+		- real time data/ producers ----> kinesis agent ----> aws kinesis data stream ----> consumer (app/lambda)
+		
+	- AWS data firehose : 
+		- pully managed service
+		- will buffer data and send / it can be near realtime buffering 
+		- serverless 
+		- producers (app/client/SDK/kinesis agent/kinesis data streams/aws cloud watch/awsIoT) ------> aws sata firehose ---> (s3/ aws redshift/aws open search)/3rd party splunk,newrelic,mongoDB
+		
+	- AWS MQ : 
+		- it is a managed message broker service for 2 technologies 
+			- RabbitMQ
+			- ACtiveMQ
+		- if u do not want to use cloud native services like SQS or SNS 
+		- if u want to migrate your application haivng MQ as rabbitMQ / activeMQ
+		
+	- AWS docker container management
+		- aws ECS : Elastic container Service
+			- EC2 launch type
+				- we must provision and miantain the infra like EC2
+				- EC2 runs ECS agent to register on ECS cluster
+			- forgate launch type 
+				- serverless / no need to manage server
+			- we can use load balancer like ALB /NLB for LB
+			- can use EFS for data volumes / and data persistance / over multi AZ data persistance and data sharing 
+			- ECS service auto scaling : we can use help of metrics to define this 
+				- target tracking 
+				- step scaling 
+				- Scheduled scaling 
+			- ECS cluster capacity provider to triger ASG for EC2
+			
+		- ECS task invoked by aws eventbridge : 
+			- 
+				
+				
+				
+		- aws EKS : Elastic kubernetes service
+			- node types : 
+				- Managed Node group 
+				- self-managed nodes
+				- aws fargate
+		- aws fargate
+			- serverless / no need to manage server
+		- aws ECR : container repository
+		
+		- AWS app runner :
+			- fully managed service that makes it easy to deploy web app and api at 
+			scale 
+		- AWS App2Container.
+		
+	- serverless :
+		- where er do not maintain servers . it is managed by AWS 
+		- serverless ervicess in aws : 
+			- aws lambda:
+				- this should be short lived funtion to work on triggers or cron jobs 
+				- need to set concurrency and throtting 
+				- can handle 1000 concurrent request 
+				- cold start issue may occour in lanbda funtion . to mitigate that we can provisioned concurrancy 
+				- by default lambda will launched in aws own VPC  
+				- to access VPN service we need to launch lambda in VPC 
+				- and also we should proxy to connect to DB to prevent overload on connection pool
+				- we can invoke lambda from RDA postgres or aurora mysql
+				- lambda snapshot : 
+			- cloudfront funtion and Lambda@edge : 
+				- lightweite fun in javascript
+				- use case : 
+					- website security and privacy
+					- Dynamic web application at the dge
+					- search engine optimization 
+					- intelligently route across origins and data center
+					- bot mitigation at edge
+					- Real-time image transformation 
+					- A/B testing
+					- user auth 
+					- user prioritization 
+					- user tracking and analytics 
+			- dynamodb
+				- provision mode 
+					- we provision the number of read/write per second and plan the capacity
+				- on-demand mode 
+					- read/write automatically scale up/down with your workload / no capacity planning needed
+					
+				- dynamodb Accelerator (DAX)
+					fully managed , highly available, seamless in-memory cache for dynamodb
+				- dynamodb streams :  
+				- dynamodb Global Tables : 
+				- dynamodb - time to live (TTL)
+				- dynamodb - Backups for disaster recovery
+					- enable point in time recovery
+				- dynamodb - integration with AWS S3
+					- dynamodb ----> S3 ------> athena
+					- S3 -----> dynamodb (create new table )
+			
+			- AWS API Gateway : 
+				- aws lambda + API Gateway : No infra to manager : fully serverless
+				- support websocket protocol
+				- handle api versioning 
+				- handle diff env
+				- handle security
+				- create API key , handle request throtting
+				- validate and transform req and res
+				- cache api responses 
+				
+			- conginto
+			- api gateway
+			- s3
+			- SQS, SNS
+			- kinesis data firehose
+			- aurora serverless
+			- step function
+			- fargate
