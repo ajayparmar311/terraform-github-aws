@@ -1,3 +1,120 @@
+AWS :
+
+globle --> region --> multiple zones
+
+Globle Services : 
+  - IAM
+  - Route 53 (DNS)
+  - CloudFrount (Content deivery Network)
+  - WAF (Web application firewall)
+  
+IAM : 
+	- user
+	- Group
+	- roles
+  - IAM security Tools : 
+	- IAM cred report : report of all Account user and status of their various cred
+	- IAM ACcess ADvisor : show geanted user Permissions and lass access status
+	
+EC2 : IaaS ,Elastic compute cloud
+ - can run : 
+	- EC2
+	- EBS
+	- ELB 
+	- ASG auto scaling group
+ - things needed in EC2 creations : 
+	- OS 
+	- CPU
+	- RAM
+	- storage : 
+		- EBS :  it persist data after instance termination
+		- EC2 instance store (hardware) 
+	- network card L VPC
+	- Firewall- security group
+		- can allow only , inbound and outbound rules 
+		- can be attached with other security groups . to alloy traffic between other instances 
+	  - ports: 
+		- 22 : ssh secure shell
+		- 21 = FTP file transfer protocol
+		- 22 = SMTP secure file transfer protocol
+		- 80 = hhtp
+		- 443 = https
+		- 3389 = RDB for wondows
+	- bootstarp script if needed
+	
+- elastic IP : is a fixed IP address we can get . with one account we can have 5 IP max 
+	
+- placement group and strategies: 
+	 - cluster : low latency group ---- single AZ
+	 - spreed : spreads instance across underlying hardware (max 7 ins per group per AZ)
+	 - partition : 
+	
+- electic network interfaces (ENI) : 
+	- Logical component in a VPC that represents a virtual network card.
+	- We can attach multiple EN to instance .
+- EC2 hibernation state : where system RAM stat will be store in EBS. and when u start the system . system will start quickly 
+- EBS : will be created seperatly , it is AZ specific . means you can not attach AZ1 EBS to AZ2 instance. this can be mask as persist if system terminate , Then EBS will be availave to use in Volume section , single instance can attach to multiple EBS but multiple instance can not connect to single EBS 
+	- We can take snapshot of EBS and migrate them into other AZ
+	- EBS snapshot can be move to EBS archive for cheaper storage 
+	- EBS snapshot after deletion will be put under recycle bin with retention time of 1 day to 1 year 
+	- EBS multi attach for io1 and io2 family , in io2 we can enable multi attach policy to EBS so it can be attached to upto 16 instance in same AZ
+	- EBS encryption : 
+- AMI : Amazon machine image : customize Images and put that on amazon market place
+	- To build image we can create image from running instance
+	- AMI images are regio specific
+	
+- EC2 instance store : is high performance hardware disk / this are ephemeral storage : If hardware fail this fail.
+
+- Amazon EFS : Elastic File System : 
+	- EFS is managed NFS that can be mounted on many EC2 in diffrent AZ or multi AZ 
+	- use case : content managment , web serving ,data sharing
+	- protocol NFSv4.1
+	- use SG to control access
+	- campatible with only linux based AMI
+	- Pay per use .no capacity planing 
+	
+- Scalability and high availability :
+	- scalability type : 
+		- horizontal scaling : instance 
+		- Vertical Scaling : database
+	- availability : 
+		- scaling group in multi AZ : 
+			- multi AZ load balancer 
+			- multi AZ instance group / EC2 auto scaling gorups / AWS ECS
+- Elastic Load balancer is managed aws service :  
+		- spread load Accross downsteam instance
+		- Expose single point of access(DNS) to your application
+		- handle failures od downsteam instance by using instance health checks
+		- provide SSL termination(https) for application
+		- Enforce stickiness with cookiues
+		- High availability across Zones
+		- Separate public trafic for private trafic
+		
+	- 4 type Of ELB: 
+		- classic load balancer (old gen) // depricated and removed 
+		 - http,https,tcp,ssl,TLS
+		- Application load balancer (layer 7 LB)
+		 -  http,https, WebSocket
+		 - has to create target groups to send request to
+		 - has to create Rules to forword request to corrent instance
+		- Network load balancer : 
+		 - tcp,TLS, UDP
+		 - has one static IP per AZ and support assinging Elastic IP
+		 - handle millions of request 
+		 - ultra low latency
+		 - has to create target groups to send request to (EC2, private IP address of on prem system or EC2, can put NLB in front of ALB)
+		 - 
+		- Gateway load balancer :
+		 -  Operates at layer 3 (Network layer) - ip protocol
+		 - deploy scale and manage a fleet of 3rd party network virtual appliances in aws
+		 - can sun firewalls, intrusion detection and precention systems , deep packet inspection system, payload manupulation etc..
+		 
+	- user call http/https ----> load balancer (security groupp will allow access to HTTP/https) ---------> EC2 (security group allow access to ELB security group)
+	
+	- stickiness session : can enable cookie at client side and can stick client to a static instance or a non repetive instance. can in tach user seesion as cookies says
+		
+
+
  - cross -Zone Load Balancer
 	-  ALB :  CZLV is by default enable. (we can disable it at target group lavel)
 	- no changes for inter AZ data transfer
