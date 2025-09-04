@@ -1,5 +1,15 @@
-AWS :
-
+AWS service  :
+	- ec2
+	- lymbda funtion
+	- elasticbeen stack
+	- s3
+	- EBS
+	- aws arora postgress mysql
+	- elastic cache
+	- VPC 
+	- cloud front CDN
+	- route 53
+	
 globle --> region --> multiple zones
 
 Globle Services : 
@@ -49,11 +59,11 @@ EC2 : IaaS ,Elastic compute cloud
 	 - spreed : spreads instance across underlying hardware (max 7 ins per group per AZ)
 	 - partition : 
 	
-- electic network interfaces (ENI) : 
+- elastic network interfaces (ENI) : 
 	- Logical component in a VPC that represents a virtual network card.
-	- We can attach multiple EN to instance .
+	- We can attach multiple ENI to instance .
 - EC2 hibernation state : where system RAM stat will be store in EBS. and when u start the system . system will start quickly 
-- EBS : will be created seperatly , it is AZ specific . means you can not attach AZ1 EBS to AZ2 instance. this can be mask as persist if system terminate , Then EBS will be availave to use in Volume section , single instance can attach to multiple EBS but multiple instance can not connect to single EBS 
+- EBS : will be created seperatly , it is AZ specific . means you can not attach AZ1 EBS to AZ2 instance. this can be mask as persist if system terminate , Then EBS will be available to use in Volume section , single instance can attach to multiple EBS but multiple instance can not connect to single EBS 
 	- We can take snapshot of EBS and migrate them into other AZ
 	- EBS snapshot can be move to EBS archive for cheaper storage 
 	- EBS snapshot after deletion will be put under recycle bin with retention time of 1 day to 1 year 
@@ -61,7 +71,7 @@ EC2 : IaaS ,Elastic compute cloud
 	- EBS encryption : 
 - AMI : Amazon machine image : customize Images and put that on amazon market place
 	- To build image we can create image from running instance
-	- AMI images are regio specific
+	- AMI images are region specific
 	
 - EC2 instance store : is high performance hardware disk / this are ephemeral storage : If hardware fail this fail.
 
@@ -84,7 +94,7 @@ EC2 : IaaS ,Elastic compute cloud
 - Elastic Load balancer is managed aws service :  
 		- spread load Accross downsteam instance
 		- Expose single point of access(DNS) to your application
-		- handle failures od downsteam instance by using instance health checks
+		- handle failures on downsteam instance by using instance health checks
 		- provide SSL termination(https) for application
 		- Enforce stickiness with cookiues
 		- High availability across Zones
@@ -107,7 +117,7 @@ EC2 : IaaS ,Elastic compute cloud
 		- Gateway load balancer :
 		 -  Operates at layer 3 (Network layer) - ip protocol
 		 - deploy scale and manage a fleet of 3rd party network virtual appliances in aws
-		 - can sun firewalls, intrusion detection and precention systems , deep packet inspection system, payload manupulation etc..
+		 - can run firewalls, intrusion detection and prevention systems , deep packet inspection system, payload manupulation etc..
 		 
 	- user call http/https ----> load balancer (security groupp will allow access to HTTP/https) ---------> EC2 (security group allow access to ELB security group)
 	
@@ -116,12 +126,12 @@ EC2 : IaaS ,Elastic compute cloud
 
 
  - cross -Zone Load Balancer
-	-  ALB :  CZLV is by default enable. (we can disable it at target group lavel)
+	-  ALB :  CZLB is by default enable. (we can disable it at target group lavel)
 	- no changes for inter AZ data transfer
 	- go to load balancer target group and below attribute section there we can enable and disable CZLB 
 	- network and Gateway LB :
 		- CZLV  disabled by default
-		-  you pay changes for inter AZ data if enabled
+		-  you pay charges for inter AZ data tranfer if enabled
 		- go to load balancer and below attribute section there we can enable and disable CZLB 
 	- classic LB : 
 		- disabed bydefault 
@@ -134,7 +144,7 @@ EC2 : IaaS ,Elastic compute cloud
 		- we must specify a default certificate
 		- we can add an optional list of certs to sopport multiple domain
 		- Clients can use SNI (server name indication ) to specify the hostname they want to reach 
-			- SNL solves the problem of loading multiple SSL certificate onto one web server (to server multiple websites)
+			- SNI solves the problem of loading multiple SSL certificate onto one web server (to server multiple websites)
 			- it's a newer protocol and requires the client to indicate the hostname of the target server in the initial SSL handshake
 			- the server will then find the currect certificate or return the default one
 			- This only works with ALB and NLB , cloudfront
@@ -164,7 +174,7 @@ EC2 : IaaS ,Elastic compute cloud
 		- scaling Capabilities (vertical and horizontal)
 		- storage backed by EBS
 		- But we can not SSH into instance
-		- in AWS there is a network cost when data goe from one AZ to another but for RDS read replicas within the same region , we don not pay that fee
+		- in AWS there is a network cost when data goes from one AZ to another but for RDS read replicas within the same region , we do not pay that fee
 	- RDS Multi AZ (DR)
 		- SYNC replication
 		- one DNS name : auto app failover to standby
@@ -180,7 +190,7 @@ EC2 : IaaS ,Elastic compute cloud
 		- help to increase storage dynamically
 		- detect and increase the storage 
 		- we have to set max storage threshold
-	- you can craete elow DB in AWS : 
+	- you can craete below DB in AWS : 
 		- postgres
 		- MySQL
 		- MariaDB
@@ -197,10 +207,10 @@ EC2 : IaaS ,Elastic compute cloud
 		- we can only do read on read replicas which will be SELECT kind of statements
 	- RDS Custom : 
 		- Managed oracle and ms sql database with OS and database customization
-		- RDS custome enable us to underlying database and OS so you can 
+		- RDS custom enable us to underlying database and OS so you can 
 			- Configure settings 
 			- install patches
-			- enable nativ feature
+			- enable native feature
 			- Access the underling EC2 instance using SSH and SSM session manager
 		- before doing any customisaion De-activate automation modeand take DB snapshot.
 		- RDS custom will have full admin access to underlying OS and DB
@@ -208,7 +218,7 @@ EC2 : IaaS ,Elastic compute cloud
 	- AWS Aurora : 
 		- Aurora is AWS  native service 
 		- postgres and mysql are both supported as aurora DB
-		- aurora is cloud optimized  and claims 5X permormance improvement, and 15 read replicas- AURORA cost more upto 20 %
+		- aurora is cloud optimized  and claim 5X performancee improvement, and 15 read replicas- AURORA cost more upto 20 %
 		- it will create 6 copy of your data access 3 AZ , 4 copy from 6 is for write and 3 copy for ready , it has self healing with peer-to-peer replication 
 	 - Clients ----> writer endpoint pointing to the master ---- > master node for write----->storage 
 	 - client <-------> reader endpoint connection load balancing -----> master read replicas ----- storage(ayto expanding from 10G to 128 TB)
@@ -227,12 +237,12 @@ EC2 : IaaS ,Elastic compute cloud
 	- advance concept of Aurora : 
 		- Aurora REplicas - auto scaling 
 		- Aurora Custom endpoint : can attched other subset of powerfull or specific machine for analisis perposes 
-		- Aurora Serverless : automated database instantiation and auto scaling based on actual usage : in case of infrequest and unpredicted workload , no capicity planning needed . u will pay per second which is more cost effective, this will be accomodated with proxy fleet . where clients will talk to proky fleet endpoint and below that many instances will be created and handled by Aurora serverless
+		- Aurora Serverless : automated database instantiation and auto scaling based on actual usage : in case of infrequest and unpredicted workload , no capicity planning needed . u will pay per second which is more cost effective, this will be accomodated with proxy fleet . where clients will talk to proxy fleet endpoint and below that many instances will be created and handled by Aurora serverless
 		- globel aurora : will have one primary region where read and write will happen. up to 5 secondary read-only region, replication led less then 1 sec, up to 16 read replica per secondary region, Help for decreasing latency, promoting another region has an RTO of < 1 min 
 		- Aurora Machine learning : can integrate with AWS ml service , AWS Sagemaker, AWS Comprehend for sentiment analysis, use case , fraud detection , ads targeting, sentiment analysis, product recommendations.
-		- Babelfish for Aurora Postgresql : allow aurora postgress to understand commands targeted for mssql server : use case if u have migrated from mssql database to aurora postgresql and u do mot want to do much or no change to your appliction so in that case babelfish will translep your mssql query into aurora postgresql query from T-sql to PL/pgsql
+		- Babelfish for Aurora Postgresql : allow aurora postgress to understand commands targeted for mssql server : use case if u have migrated from mssql database to aurora postgresql and u do mot want to do much or no change to your appliction so in that case babelfish will translet your mysql query into aurora postgresql query from T-sql to PL/pgsql
 		
-	- RDDS backup : 
+	- RDS backup : 
 		- automated backups : 
 			- daily full backup in backup window :
 			-  transection logs are backed up by RDS every 5 min 
@@ -317,7 +327,7 @@ EC2 : IaaS ,Elastic compute cloud
 				- we can have TTL upto 24 hour less traffic to route 53 low cost , also we can have TTL to 60s which increase load on route 53 and increase cost .choose as per your requirenment 
 		
 	- Route 53 - Hosted Zones : 
-		- A container for the records that define how to route traffic to a domain and its subdomains
+		- A containes for the records that define how to route traffic to a domain and its subdomains
 		
 		- public hosted Zone : containes records that specify how to route traffic on the internet (public domain name) : if a client call the domain this hosted zome can resolve the underlying application IP 
 		
@@ -339,10 +349,10 @@ EC2 : IaaS ,Elastic compute cloud
 				- Control the % of the requests that go to each specific resource 
 				- while defining the records we will attach weight to the reource and behalf of that it will be selected at time of call 
 			- failover: 
-				- this we can setup for SC to SR switch in case of DC failover 
+				- this we can setup for DC to DR switch in case of DC failover 
 				- we can set primary and secondary record with health check , So if primary resource is unhealthy route 53 will auto switch to secondary resource 
 			- latency based :
-				- the resourcxe will be selected as per the lowest latency .
+				- the resource will be selected as per the lowest latency .
 				- if u r calling from canada and u have resource deployed in us-east-1 and south-east-1 singapore then you will get output from us-east-1 as it is closest .
 			- Geolocation : 
 				- this routing based on user location 
@@ -402,7 +412,7 @@ EC2 : IaaS ,Elastic compute cloud
 		
 	- S3 - Storage classes : 
 		- s3 standard - General purpose : 
-			- big data analytics , mobile and gaming app, ocntent distribution
+			- big data analytics , mobile and gaming app, content distribution
 		- s3 standard - infrequent access (IA)
 			- disaster recovery , backups ..
 		- s3 one Zone-infrequent Access
@@ -435,13 +445,13 @@ EC2 : IaaS ,Elastic compute cloud
 			- recommended for ? 100 file 
 			- must for > 5GB file
 		- S3 tranfer acceleration : 
-			- increase transfer speedn by transferring files to AWS edge location 
+			- increase transfer speed by transferring files to AWS edge location 
 			file in USA ------> AWS edge location using public internet -----> stored to S3 bucket using AWS private netwrok from edge location 
 		- s3 byte-Range fatches :
-			- we will get the data in parts which will be more ewsilience in case of failures
+			- we will get the data in parts which will be more resilience in case of failures
 			
 	- S3 batch Operations 
-		- Perform bulk operation on the exisitng s3 objectswith a single request 
+		- Perform bulk operation on the exisitng s3 objects with a single request 
 		 - modify object metadata and properties
 		 - copy object between s3 buckets
 		 - encrypt un-encryoted object 
@@ -449,7 +459,7 @@ EC2 : IaaS ,Elastic compute cloud
 		 - Restore objects from S3 Glacier
 		 - Invoke Lambda function to perform custome action on each object.
 		- The job contains list of onjects , the action to perform and optional parameters
-		- bacth operation manages retries,tracks progress,send complition notification , generate reports
+		- batch operation manages retries,tracks progress,send complition notification , generate reports
 		- we can get s3 inventory to get object list and use Athena to query and filter objects 
 		
 	- S3 - storage Lens : is metrix service which and help us to optimize the S# infra which we have setup , can create deshboard for visualiation 
@@ -471,13 +481,13 @@ EC2 : IaaS ,Elastic compute cloud
 					- https mush be used 
 				
 			- client side encryption :
-				- client will send the encypted data to S3 and decryp the data at teh tim of retrival 
+				- client will send the encypted data to S3 and decryp the data at the time of retrival 
 				
-		- S3 - encription iin transit (SSL/TLS)
+		- S3 - encription in transit (SSL/TLS)
 		
 		- AWS S3 - CORS (cross origin Resource Sharing)
 		
-		- AWS S3 - MFA delete enable/disable : can be enable oly with aws CLI or SDK 
+		- AWS S3 - MFA delete enable/disable : can be enable only with aws CLI or SDK 
 		
 		- AWS S3 - access logs: enable servier access loggin in perperties tab
 		
@@ -501,7 +511,7 @@ EC2 : IaaS ,Elastic compute cloud
 			- legal hold : protest object for indefinitely but can be modified by some suers with proper access
 			
 		- AWS S3 - Access Points : 
-			- we can creatse access point to route uer to specific prefix of object 
+			- we can create access point to route uer to specific prefix of object 
 			- access point simplify security management for S3 bucket
 			- Each access point has : 
 				- its own DNS name (can be internet facing or VPC private facing )
@@ -517,7 +527,7 @@ EC2 : IaaS ,Elastic compute cloud
 		- cloudfront - Origins:
 			- s3 bucket : we will create origin access control to access S3 bucket from cloud frount 
 			- VPC origin
-			- csutome origin 
+			- custome origin 
 			
 		- How it work 
 			Client call cloudfront -------> cloudfront data in edge location cache : if found return that to client : if not found send requerst to origin to get the data and cache the data in edge location --------------> origin aws s3
@@ -525,9 +535,9 @@ EC2 : IaaS ,Elastic compute cloud
 		- cloudfront - ALB or ECS as an origin - using VPC origin:
 			- this is most secure way to inplimentation, Because your application is hosted in private VPC and even your ALB,NLB is also in private VPC
 			
-			- users-----> CF and edgelocation ----> VPC origin ---< private ALB-NLB-EC2
+			- users-----> CF and edge location ----> VPC origin ---< private ALB-NLB-EC2
 			
-		- Cloudfront Gro restrictin
+		- Cloudfront Go restrictin
 			- we can restrict who can access the distribution 
 				- allowlist : allow user to access content only if they are in one of the countries on a list of approved countries
 				- Blocklist : Prevent user to access content only if they are in one of the countries on a list of Banned countries
@@ -628,7 +638,7 @@ EC2 : IaaS ,Elastic compute cloud
 		- pully managed service
 		- will buffer data and send / it can be near realtime buffering 
 		- serverless 
-		- producers (app/client/SDK/kinesis agent/kinesis data streams/aws cloud watch/awsIoT) ------> aws sata firehose ---> (s3/ aws redshift/aws open search)/3rd party splunk,newrelic,mongoDB
+		- producers (app/client/SDK/kinesis agent/kinesis data streams/aws cloud watch/awsIoT) ------> aws data firehose ---> (s3/ aws redshift/aws open search)/3rd party splunk,newrelic,mongoDB
 		
 	- AWS MQ : 
 		- it is a managed message broker service for 2 technologies 
@@ -732,3 +742,62 @@ EC2 : IaaS ,Elastic compute cloud
 			- aurora serverless
 			- step function
 			- fargate
+			
+	aws Databases : 
+	  - RDS:
+	  - AWS Arora 
+	  - ElasticCache
+	  - Dynamodb :
+		- use case :  serverless app development (smm doc 100kb), Distributed serverless cache
+	  - AWS S3
+	  - DockermentDB (mongoDB) : 
+	  - AWS Neptune (stream): grapth DB : 
+		- usecase : social media
+	  - AWS Keyspaces (For apache Cassandra)
+	  - AWS Timestream:
+	- AWS Data and analysis:
+	  - AWS Athena: 
+		- Serverless query service to analyze data stored in AWS S3
+	    - user standered sql language to query the files
+		- commonly used with AWS quicksight for reporting /databoards
+	    usercase: 
+			- business intelligence / analyrics / reporting , analyze and query VPC Flow Logs , ELB Logs , CloudTrail etc. 
+	  - Redshift / redshift Spectrum / redshift data warehouse:
+	  - AWS opensearch sercice : Elastic search
+	  - AWs EMR: Elastic Map reduce: 
+	  - AWS Quicksight / deshboard : 
+	  - AWS Glue: managed Extract, Transform and load service. ETL
+	  - AWS lake formation : 
+	  - aws managed services for apache flink
+	  - aws managed services for apache kafka (AWS MSK)
+	  - big data injestion pipeline 
+	  
+	- AWS monitoring and audit:
+		- Cloud Watch Metrics:
+		- cloud Watch logs :
+		- cloud watch Alerms : 
+		- AWS EventBridge / event bus: 
+		- Cloud Watch container insights: agent runs on ECS, EKS, kube on EC@, fargate to collecto metrics and logs 
+		- Cloud Watch containe insights: 
+		- Cloud Watch contribute insights: 
+		- Cloud Watch Application insights: 
+		- Cloud trail : provide govt., compliance and audit for your AWS account
+			- Management Events :
+			- Data Evenets
+			- Cloudtrail insights Events :  default retention is 90 days 
+		- aws Config : 
+		
+	- AWS organization 
+	- IAM Identity Center
+	- AWS Directory service : 
+		- on-prem AD <---trust---- AD Connector <---- auth 
+		- on-prem AD <----proxy--- AWS Managed AD <---- auth 
+	- AWS Control tower
+	
+	- AWS SSM perameter
+	- aws secret manager
+	- aws certificate manager ACM:
+	- AWS web application firewall works on layer 7 : 
+	- AWS shield : protect from DDoS attack:
+		- DDos : Distributed denial of services : Many request at same time 
+	- AWS Firewall manager: 
